@@ -1,0 +1,10 @@
+/* Ensure the canvas takes up the full window */
+body {
+  margin: 0;
+  overflow: hidden; /* Prevents scrollbars */
+}
+#renderCanvas {
+  width: 100%;
+  height: 100vh; /* Full height of the viewport */
+  touch-action: none; /* Disable touch gestures */
+}
