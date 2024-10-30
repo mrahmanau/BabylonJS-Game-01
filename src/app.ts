@@ -10,6 +10,7 @@ import {
   Mesh,
   MeshBuilder,
 } from "@babylonjs/core";
+import MainMenu from "./menu/main-menu";
 
 let canvas: HTMLCanvasElement;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -50,6 +51,9 @@ class App {
       { diameter: 1 },
       scene
     );
+
+    // Initialize the main menu and show it
+    new MainMenu().show();
 
     // hide/show the Inspector
     window.addEventListener("keydown", (ev) => {
