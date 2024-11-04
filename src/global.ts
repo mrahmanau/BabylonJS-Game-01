@@ -4,7 +4,8 @@ type MeshArray = Mesh[];
 
 export class global {
   // array stores all units of 2 team
-  static arrUnits: [MeshArray, MeshArray];
+  // static arrUnits: [MeshArray, MeshArray];
+  static arrUnits: [MeshArray, MeshArray] = [[], []];
 
   // Character Shape
   static MeshPos: FloatArray;
@@ -15,6 +16,12 @@ export class global {
 export class KNIGHT {
   static cost = 15;
   static count = 0;
+  static max_count = 30;
+}
+
+export class COIN {
+  static cost = 15;
+  static count = 15;
   static max_count = 30;
 }
 

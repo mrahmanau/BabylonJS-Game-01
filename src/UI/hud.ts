@@ -1,90 +1,144 @@
 import * as GUI from "@babylonjs/gui";
+import { ARCHER, COIN, KNIGHT } from "../global";
+import { setValues, UIManager } from "./ui-manager";
+
+let coinCounterText: GUI.TextBlock;
+let knightCounterText: GUI.TextBlock;
+let archerCounterText: GUI.TextBlock;
+
+/**
+ * Manages the heads-up display (HUD) elements.
+ */
 export class HUD {
-  private advancedTexture: GUI.AdvancedDynamicTexture;
-
-  public castle1HealthBar: GUI.Slider;
-  public castle2HealthBar: GUI.Slider;
-  public coinCounter: GUI.StackPanel;
-  public knightCounter: GUI.StackPanel;
-  public archerCounter: GUI.StackPanel;
-
   constructor() {
-    // Create the AdvancedDynamicTexture
-    this.advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+    // Use the shared advancedTexture from UIManager
+    const advancedTexture = UIManager.advancedTexture;
 
-    // Create and add health bars
-    this.castle1HealthBar = this.createHealthBar("10px", "10px");
-    this.castle2HealthBar = this.createHealthBar("220px", "10px");
+    // Create castle1 health bar
+    createHealthBar("10px", "10px", "0px", advancedTexture);
 
-    // Create and add counters
-    this.coinCounter = this.createCounter(
+    // Create counters for coins, knights, and archers between the health bars
+    coinCounterText = createCounter(
+      "240px",
+      "10px",
+      "assets/images/coin.png",
+      "0px",
+      advancedTexture
+    );
+    knightCounterText = createCounter(
       "360px",
-      "16px",
-      "assets/images/coin.png"
+      "10px",
+      "assets/images/knight.png",
+      "0px",
+      advancedTexture
+    );
+    archerCounterText = createCounter(
+      "480px",
+      "10px",
+      "assets/images/archer.png",
+      "0px",
+      advancedTexture
     );
 
-    this.knightCounter = this.createCounter(
-      "400px",
-      "16px",
-      "assets/images/knight.png"
-    );
+    // Create castle2 health bar
+    createHealthBar("600px", "10px", "0px", advancedTexture);
 
-    this.archerCounter = this.createCounter(
-      "440px",
-      "16px",
-      "assets/images/archer.png"
-    );
+    // Update counters for testing purposes
+    updateCoinCounter();
+    updateArchersCounter();
+    updateKnightsCounter();
   }
+}
 
-  private createHealthBar(left: string, top: string): GUI.Slider {
-    const healthBar = new GUI.Slider();
-    healthBar.height = "40px";
-    healthBar.width = "200px";
-    healthBar.color = "green";
-    healthBar.background = "red";
-    healthBar.thumbColor = "darkgreen";
-    healthBar.isThumbCircle = true;
-    healthBar.isThumbClamped = true;
-    healthBar.value = 100;
-    healthBar.minimum = 0;
-    healthBar.maximum = 100;
-    healthBar.isVertical = false;
-    healthBar.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    healthBar.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-    healthBar.left = left;
-    healthBar.top = top;
-    this.advancedTexture.addControl(healthBar);
+/**
+ * Creates a health bar at a specified position.
+ * @param left - The left offset for positioning the health bar.
+ * @param top - The top offset for positioning the health bar.
+ * @param bottom - The bottom offset for positioning the health bar.
+ * @returns The created health bar slider.
+ */
+function createHealthBar(
+  left: string,
+  top: string,
+  bottom: string,
+  advancedTexture: GUI.AdvancedDynamicTexture
+) {
+  const healthBar = new GUI.Slider();
+  setValues(
+    healthBar,
+    "200px",
+    "40px",
+    left,
+    top,
+    bottom,
+    GUI.Control.VERTICAL_ALIGNMENT_TOP
+  );
+  healthBar.displayThumb = false;
+  healthBar.color = "green";
+  healthBar.background = "red";
+  healthBar.value = 100;
+  healthBar.minimum = 0;
+  healthBar.maximum = 100;
+  healthBar.isVertical = false;
+  advancedTexture.addControl(healthBar);
+  return healthBar;
+}
 
-    return healthBar;
-  }
+/**
+ * Creates a counter with an image and text at a specified position.
+ * @param left - The left offset for positioning the counter.
+ * @param top - The top offset for positioning the counter.
+ * @param imageUrl - The URL of the image to be used in the counter.
+ * @param bottom - The bottom offset for positioning the counter.
+ * @returns The created text block for the counter.
+ */
+function createCounter(
+  left: string,
+  top: string,
+  imageUrl: string,
+  bottom: string,
+  advancedTexture: GUI.AdvancedDynamicTexture
+) {
+  const counter = new GUI.StackPanel();
+  setValues(
+    counter,
+    "200px",
+    "40px",
+    left,
+    top,
+    bottom,
+    GUI.Control.VERTICAL_ALIGNMENT_TOP
+  );
+  counter.isVertical = false;
 
-  private createCounter(
-    left: string,
-    top: string,
-    imageUrl: string
-  ): GUI.StackPanel {
-    const counter = new GUI.StackPanel();
-    counter.width = "200px";
-    counter.height = "30px";
-    counter.isVertical = false;
-    counter.horizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    counter.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
-    counter.left = left;
-    counter.top = top;
-    const image = new GUI.Image("counterImage", imageUrl);
-    image.width = "30px";
-    image.height = "30px";
-    counter.addControl(image);
-    const scoreText = new GUI.TextBlock();
-    scoreText.text = "0";
-    scoreText.width = "50px";
-    scoreText.height = "30px";
-    scoreText.color = "white";
-    scoreText.textHorizontalAlignment = GUI.Control.HORIZONTAL_ALIGNMENT_LEFT;
-    scoreText.paddingLeft = "10px";
-    counter.addControl(scoreText);
-    this.advancedTexture.addControl(counter);
+  // Add image to the counter
+  const image = new GUI.Image("counterImage", imageUrl);
+  setValues(image, "40px", "40px", "0px", "0px", "0px");
+  counter.addControl(image);
 
-    return counter;
-  }
+  // Add text block to display the count
+  const scoreText = new GUI.TextBlock();
+  scoreText.text = "0";
+  scoreText.fontSize = "32px";
+  scoreText.color = "white";
+  setValues(scoreText, "50px", "40px", "0px", "0px", "0px");
+  counter.addControl(scoreText);
+
+  advancedTexture.addControl(counter);
+  return scoreText;
+}
+
+/** Updates the coin counter text. */
+function updateCoinCounter() {
+  coinCounterText.text = COIN.count.toString();
+}
+
+/** Updates the knights counter text. */
+function updateKnightsCounter() {
+  knightCounterText.text = KNIGHT.count.toString();
+}
+
+/** Updates the archers counter text. */
+function updateArchersCounter() {
+  archerCounterText.text = ARCHER.count.toString();
 }

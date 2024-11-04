@@ -8,11 +8,11 @@ import {
   HemisphericLight,
   FreeCamera,
 } from "@babylonjs/core";
-import { HUD } from "./UI/hud";
 import { Castle } from "./castle";
 import { GoldMine } from "./gold-mine";
-import { Map } from "./map";
-import { ButtonsManager } from "./UI/buttons-manager";
+import { UIManager } from "./UI/ui-manager";
+import { Knight } from "./knight";
+import { Archer } from "./archer";
 
 let canvas: HTMLCanvasElement;
 let engine: Engine;
@@ -37,10 +37,7 @@ class App {
     light.intensity = 0.7;
 
     // Instantiate the map
-    new Map();
-
-    // Instantiate the HUD
-    new HUD();
+    // new Map();
 
     // Instantiate the player's castle
     new Castle("playersCastle", new Vector3(-14, 0, 14), 0);
@@ -51,8 +48,24 @@ class App {
     // Instantiate the enemy's castle
     new Castle("enemiesCastle", new Vector3(14, 0, -14), 1);
 
-    // Instantiate the buttons manager
-    new ButtonsManager(scene);
+    // Instantiate the UI Manager
+    new UIManager(scene);
+
+    // Initialize arrUnits for both teams
+    global.arrUnits = [[], []]; // Ensure this line is called before creating Knights
+
+    // Initialize Knight characters for both teams
+    // const knightTeam0Position = new Vector3(-12, 0, 12);
+    // new Knight(0, knightTeam0Position, scene);
+
+    // const knightTeam1Position = new Vector3(12, 0, -12);
+    // new Knight(1, knightTeam1Position, scene);
+
+    const archerTeam0Position = new Vector3(-12, 0, 12);
+    new Archer(0, archerTeam0Position, scene);
+
+    const archerTeam1Position = new Vector3(12, 0, -12);
+    new Archer(1, archerTeam1Position, scene);
 
     // Run the render loop to continuously render the scene
     engine.runRenderLoop(function () {

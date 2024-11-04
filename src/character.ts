@@ -1,76 +1,104 @@
-// character.ts
 import {
-  Mesh,
-  Sprite,
-  StandardMaterial,
   Color3,
+  Mesh,
   MeshBuilder,
   Scene,
+  Sprite,
+  StandardMaterial,
+  Vector3,
 } from "@babylonjs/core";
 
-export abstract class Character extends Mesh {
+// Constants
+const maxHealth = 100;
+const moveSpeed = 0.03;
+
+// Base Character Class
+export class Character {
   team: number;
+  health: number = maxHealth;
+  position: Vector3;
+  destination: Vector3 = new Vector3(0, 0, 0);
   healthBar: Mesh;
   sprite: Sprite;
-  health: number;
-  maxHealth: number;
+  weaponSprite: Sprite;
+  enemyInRange: Mesh[] = [];
+  animationCells = [16, 24];
+  attackSpeed = 500; // 0.5 sec
+  attackRange = 1.5;
+  seeEnemyRange = 7;
+  mesh: Mesh; // Add a mesh property
 
-  constructor(team: number, maxHealth: number, scene: Scene) {
-    super("Character", scene);
+  constructor(team: number, position: Vector3, scene: Scene) {
     this.team = team;
-    this.maxHealth = maxHealth;
-    this.health = maxHealth;
+    this.position = position;
+
+    // Update global unit array
+    global.arrUnits[team].push(this);
 
     // Create health bar
     this.healthBar = this.createHealthBar(scene);
   }
 
-  protected createHealthBar(scene: Scene): Mesh {
-    const healthBar = MeshBuilder.CreateBox(
-      "healthBar",
-      { width: 1, height: 0.1, depth: 0.1 },
+  createHealthBar(scene: Scene): Mesh {
+    const greenMat = new StandardMaterial("hb1mat", scene);
+    greenMat.diffuseColor = Color3.Green();
+    greenMat.backFaceCulling = false;
+
+    const grayMat = new StandardMaterial("hb2mat", scene);
+    grayMat.diffuseColor = Color3.Gray();
+    grayMat.backFaceCulling = false;
+
+    const healthBar = MeshBuilder.CreatePlane(
+      "hb1",
+      { width: 0.5, height: 0.1 },
       scene
     );
-    const healthMaterial = new StandardMaterial("healthMat", scene);
-    healthMaterial.diffuseColor = Color3.Green();
-    healthBar.material = healthMaterial;
-    healthBar.parent = this;
-    healthBar.position.y = 1.5; // Position it above the character's head
-    return healthBar;
-  }
+    healthBar.material = greenMat;
+    healthBar.position.z = 0.01; // Slightly offset in front
 
-  // Method to receive damage
-  receiveDamage(damage: number): void {
-    this.health -= damage;
-    if (this.health <= 0) {
-      this.health = 0;
-      this.die(); // Call die() to handle death logic
-    }
-    this.updateHealthBar();
-  }
-
-  protected updateHealthBar() {
-    const healthRatio = this.health / this.maxHealth;
-    (this.healthBar.material as StandardMaterial).diffuseColor = Color3.Lerp(
-      Color3.Red(),
-      Color3.Green(),
-      healthRatio
+    const healthBarContainer = MeshBuilder.CreatePlane(
+      "hb2",
+      { width: 0.5, height: 0.1 },
+      scene
     );
-    this.healthBar.scaling.x = healthRatio;
+    healthBarContainer.material = grayMat;
+    healthBarContainer.position = new Vector3(0, 1, 0); // Adjust height relative to character
+
+    // Parent the health bar to the container
+    healthBar.parent = healthBarContainer;
+    // Parent the health bar container to the character mesh
+    healthBarContainer.parent = this.mesh;
+    this.healthBar = healthBarContainer; // Keep reference to the health bar container for updates
+    return healthBarContainer; // Return the container
   }
 
-  protected abstract attack(): void; // Abstract method to be implemented by derived classes
+  // Shared method to move character
+  move(destination: Vector3) {
+    const direction = destination
+      .subtract(this.position)
+      .normalize()
+      .scale(moveSpeed);
+    this.position.addInPlace(direction); // Update character position
+    this.mesh.position.copyFrom(this.position); // Move the character mesh
 
-  // Change the return type of die() to boolean
-  protected die(): boolean {
-    this.dispose();
-    this.sprite.dispose();
-    this.healthBar.dispose();
-    return true; // Indicate the character is dead
+    // Update health bar position relative to character
+    if (this.healthBar) {
+      this.healthBar.position.x = this.position.x; // Match x position
+      this.healthBar.position.z = this.position.z; // Match z position
+      this.healthBar.position.y = 0.5; // Keep height at 1 relative to the character
+    }
+    return direction;
   }
 
-  // Add a method to check if the character is dead
-  public isDead(): boolean {
-    return this.health <= 0;
+  // Shared method to update health bar
+  updateHealthBar() {
+    const percentage = this.health / maxHealth;
+    this.healthBar.scaling.x = percentage; // Scale health bar based on health
+    //this.healthBar.position.x = (1 - percentage) * 0.25; // Adjust position based on health
   }
+
+  // Abstract methods for specific actions (can be overridden)
+  attack() {}
+  die() {}
+  takeDamage() {}
 }

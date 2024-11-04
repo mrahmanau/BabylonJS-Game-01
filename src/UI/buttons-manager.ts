@@ -1,91 +1,78 @@
-import {
-  AdvancedDynamicTexture,
-  Button,
-  Control,
-  StackPanel,
-} from "@babylonjs/gui";
-import { Scene, Vector3 } from "@babylonjs/core";
-import { Projectile } from "../projectile";
+import { StackPanel, Button } from "@babylonjs/gui";
+import { setValues, UIManager } from "./ui-manager";
 
+const buttonPanel = new StackPanel();
+
+/**
+ * Initializes the ButtonsManager with a given scene.
+ */
 export class ButtonsManager {
-  private ui: AdvancedDynamicTexture;
-  private buttonPanel: StackPanel;
-  private projectile: Projectile;
+  constructor() {
+    // Use the shared advancedTexture from UIManager
+    const advancedTexture = UIManager.advancedTexture;
 
-  constructor(scene: Scene) {
-    // Initialize the Projectile class
-    this.projectile = new Projectile(scene);
-    // Create a full-screen UI texture to hold buttons
-    this.ui = AdvancedDynamicTexture.CreateFullscreenUI("UI", true, scene);
+    // Create a stack panel for buttons
+    setValues(buttonPanel, "500px", "70px", "10px", "0px", "10px");
+    buttonPanel.isVertical = false;
+    advancedTexture.addControl(buttonPanel);
 
-    // Create a panel to hold buttons in a horizontal stack at the bottom left
-    this.buttonPanel = new StackPanel();
-    this.buttonPanel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-    this.buttonPanel.verticalAlignment = Control.VERTICAL_ALIGNMENT_BOTTOM;
-    this.buttonPanel.width = "500px"; // Adjust width to fit buttons
-    this.buttonPanel.height = "60px"; // Adjust height
-    this.buttonPanel.paddingBottom = "10px";
-    this.buttonPanel.isVertical = false; // Ensure the stack is horizontal
-    this.ui.addControl(this.buttonPanel);
-
-    // Create buttons
-    this.createImageButton("Slime", "assets/images/archer.png");
-    this.createImageButton("Knight", "assets/images/knight.png");
-    this.createImageButton("Archer", "assets/images/archer.png");
-    this.createTextButton("X1", () => this.onAcceleratorClick()); // X1 button
-    this.createTextButton("Castle1", () => this.onCastleClick("Castle1")); // Castle1 button
-    this.createTextButton("Castle2", () => this.onCastleClick("Castle2")); // Castle2 button
+    // Create buttons and add them to the panel
+    createImageButton("Slime", "assets/images/slime.png");
+    createImageButton("Knight", "assets/images/knight.png");
+    createImageButton("Archer", "assets/images/archer.png");
+    createTextButton("Accelerator", "X1");
   }
+}
 
-  private createImageButton(name: string, imageUrl: string) {
-    // Create a button with an image
-    const button = Button.CreateImageOnlyButton(name, imageUrl);
-    button.width = "80px";
-    button.height = "60px";
-    button.thickness = 0;
-    button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-    button.onPointerClickObservable.add(() => this.onButtonClick(name));
+/**
+ * Creates an image button and adds it to the button panel.
+ * @param name - The name of the button.
+ * @param imageUrl - The URL of the image to be used for the button.
+ */
+function createImageButton(name: string, imageUrl: string) {
+  const button = Button.CreateImageOnlyButton(name, imageUrl);
+  setupButton(button, name);
+  buttonPanel.addControl(button);
+}
 
-    // Add button to the panel
-    this.buttonPanel.addControl(button);
-  }
+/**
+ * Creates a text button and adds it to the button panel.
+ * @param name - The name of the button.
+ * @param buttonText - The text to be displayed on the button.
+ */
+function createTextButton(name: string, buttonText: string) {
+  const button = Button.CreateSimpleButton(name, buttonText);
+  button.color = "white";
+  button.fontSize = 24;
+  button.fontWeight = "700";
+  button.paddingLeft = "5px";
+  setupButton(button, name);
+  buttonPanel.addControl(button);
+}
 
-  private createTextButton(text: string, callback: () => void) {
-    // Create a text button for the accelerator
-    const button = Button.CreateSimpleButton("button-" + text, text); // Ensure unique IDs for buttons
-    button.width = "60px";
-    button.height = "60px";
-    button.color = "white"; // Text color
-    button.fontSize = 24; // Adjust font size for better visibility
-    button.onPointerClickObservable.add(callback);
-    button.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
+/**
+ * Sets up common properties for buttons.
+ * @param button - The button to set up.
+ * @param name - The name of the button.
+ */
+function setupButton(button: Button, name: string) {
+  setValues(button, "80px", "60px", "10px", "0px", "0px");
+  button.background = "#7c746a";
+  button.cornerRadius = 16;
+  button.onPointerClickObservable.add(() => onButtonClick(name));
 
-    // Add button to the panel
-    this.buttonPanel.addControl(button);
-  }
+  button.pointerEnterAnimation = () => {
+    button.background = "#292723";
+  };
+  button.pointerOutAnimation = () => {
+    button.background = "#7c746a";
+  };
+}
 
-  private onButtonClick(buttonName: string) {
-    // Handle logic for each button click
-    console.log(`${buttonName} button clicked`);
-    // Add logic to spawn the corresponding character, etc.
-  }
-
-  private onAcceleratorClick() {
-    // Handle logic for the accelerator (X1) button click
-    console.log("Accelerator (X1) button clicked");
-    // Implement logic to accelerate gameplay or effects here
-  }
-
-  private onCastleClick(castleName: string) {
-    // Handle logic for Castle buttons click
-    console.log(`${castleName} button clicked`);
-
-    const spawnPosition = new Vector3(0, 1, 0); // Set a position where the projectile will spawn
-
-    if (castleName === "Castle1") {
-      this.projectile.spawnSphere(spawnPosition); // Spawn sphere for Castle1
-    } else if (castleName === "Castle2") {
-      this.projectile.spawnArrow(spawnPosition); // Spawn arrow for Castle2
-    }
-  }
+/**
+ * Handles button click events.
+ * @param buttonName - The name of the button that was clicked.
+ */
+function onButtonClick(buttonName: string) {
+  console.log(`${buttonName} has been clicked`);
 }
