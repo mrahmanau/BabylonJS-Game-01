@@ -10,7 +10,7 @@ import {
 } from "@babylonjs/core";
 import { Castle } from "./castle";
 import { GoldMine } from "./gold-mine";
-import { UIManager } from "./UI/ui-manager";
+import { UIManager } from "./UI/UIManager";
 import { Archer } from "./archer";
 
 let canvas: HTMLCanvasElement;
@@ -48,7 +48,7 @@ class App {
     new Castle("enemiesCastle", new Vector3(14, 0, -14), 1);
 
     // Instantiate the UI Manager
-    new UIManager(scene);
+    new UIManager();
 
     // Initialize arrUnits for both teams
     global.arrUnits = [[], []]; // Ensure this line is called before creating Knights

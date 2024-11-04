@@ -1,6 +1,6 @@
 import * as GUI from "@babylonjs/gui";
 import { ARCHER, COIN, KNIGHT } from "../global";
-import { setValues, UIManager } from "./ui-manager";
+import { setValues, UIManager } from "./UIManager";
 
 let coinCounterText: GUI.TextBlock;
 let knightCounterText: GUI.TextBlock;
