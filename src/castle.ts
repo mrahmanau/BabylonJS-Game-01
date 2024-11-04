@@ -6,18 +6,24 @@ import {
   Color3,
 } from "@babylonjs/core";
 import { scene } from "./app";
+import { Projectile } from "./projectile"; // Import the Projectile class
 
 export class Castle {
   private castleName: string;
   private castlePosition: Vector3;
-  private team: number; // New property to associate the castle with a team
+  private team: number; // Property to associate the castle with a team
+  private projectileSpawner: Projectile; // To spawn projectiles
+  private range: number = 5; // Define the range within which characters are detected
+  private castleMesh: Mesh; // Store the castle mesh for reference
 
   constructor(name: string, position: Vector3, team: number) {
     this.castleName = name;
     this.castlePosition = position;
     this.team = team;
+    this.projectileSpawner = new Projectile(scene); // Initialize projectile spawner
 
-    this.createCastleMesh();
+    this.castleMesh = this.createCastleMesh(); // Create the castle mesh
+    this.startSpawning(); // Start spawning projectiles
   }
 
   private createCastleMesh() {
@@ -67,10 +73,48 @@ export class Castle {
       tower.parent = castleMesh;
     });
 
-    // Set the position of the entire castle
+    // Set the position of the entire castle mesh once, to keep it static
     castleMesh.position = this.castlePosition;
 
-    // Return the complete castle mesh
-    return castleMesh;
+    return castleMesh; // Return the complete castle mesh
+  }
+
+  private startSpawning() {
+    // Spawn projectiles based on character proximity
+    setInterval(() => {
+      this.spawnProjectiles();
+    }, 2000); // Every 2 seconds
+  }
+
+  private spawnProjectiles() {
+    const nearbyCharacters = this.detectNearbyCharacters();
+
+    // Spawn projectiles only if there are nearby characters
+    if (nearbyCharacters.length > 0) {
+      // Iterate over nearby characters
+      nearbyCharacters.forEach((character) => {
+        const startPosition = this.castlePosition.add(new Vector3(0, 1, 0)); // Starting slightly above the castle
+        const targetPosition = character.position; // The target character's position
+
+        if (this.team === 1) {
+          // Spawn spheres for the enemy characters
+          this.projectileSpawner.spawnSphere(startPosition, targetPosition);
+        } else if (this.team === 0) {
+          // Spawn arrows for the player's characters
+          this.projectileSpawner.spawnArrow(startPosition, targetPosition);
+        }
+      });
+    }
+  }
+
+  private detectNearbyCharacters() {
+    const characters = global.arrUnits.flat(); // Assuming global.arrUnits contains all characters
+    return characters.filter((character) => {
+      const distance = Vector3.Distance(
+        this.castlePosition,
+        character.position
+      );
+      return distance <= this.range; // Filter characters within the range
+    });
   }
 }

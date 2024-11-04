@@ -1,63 +1,44 @@
-import {
-  MeshBuilder,
-  Vector3,
-  Scene,
-  PhysicsImpostor,
-  Mesh,
-} from "@babylonjs/core";
+import { MeshBuilder, Vector3, Scene } from "@babylonjs/core";
 
 export class Projectile {
-  private scene: Scene;
+  constructor(private scene: Scene) {}
 
-  constructor(scene: Scene) {
-    this.scene = scene;
+  spawnArrow(startPosition: Vector3, targetPosition: Vector3) {
+    const arrow = MeshBuilder.CreateCylinder(
+      "arrow",
+      { diameter: 0.1, height: 2 },
+      this.scene
+    );
+    arrow.position = startPosition;
+
+    // Calculate the direction to the target
+    const direction = targetPosition.subtract(startPosition).normalize();
+    const distance = Vector3.Distance(startPosition, targetPosition);
+
+    // Move the arrow towards the target
+    arrow.position.addInPlace(direction.scale(distance));
+    arrow.rotation.y = Math.atan2(direction.x, direction.z); // Align the arrow with the direction
+
+    // Optional: You can add logic for animating the projectile's flight
+    console.log("Arrow spawned from", startPosition, "to", targetPosition);
   }
 
-  spawnSphere(position: Vector3) {
-    // Create a sphere to represent the projectile
+  spawnSphere(startPosition: Vector3, targetPosition: Vector3) {
     const sphere = MeshBuilder.CreateSphere(
-      "sphereProjectile",
+      "sphere",
       { diameter: 0.5 },
       this.scene
     );
-    sphere.position = position;
+    sphere.position = startPosition;
 
-    // Add physics to the sphere for movement
-    sphere.physicsImpostor = new PhysicsImpostor(
-      sphere,
-      PhysicsImpostor.SphereImpostor,
-      { mass: 1 }
-    );
+    // Calculate the direction to the target
+    const direction = targetPosition.subtract(startPosition).normalize();
+    const distance = Vector3.Distance(startPosition, targetPosition);
 
-    // You can add movement logic here for the projectile
-    this.moveProjectile(sphere, new Vector3(0, 0, 1)); // Example direction
-    console.log("Sphere projectile spawned at: ", position);
-  }
+    // Move the sphere towards the target
+    sphere.position.addInPlace(direction.scale(distance));
 
-  spawnArrow(position: Vector3) {
-    // Create a cylinder to represent the arrow
-    const arrow = MeshBuilder.CreateCylinder(
-      "arrowProjectile",
-      { diameter: 0.1, height: 1 },
-      this.scene
-    );
-    arrow.position = position;
-    arrow.rotation.x = Math.PI / 2; // Rotate the arrow to point upwards
-
-    // Add physics to the arrow for movement
-    arrow.physicsImpostor = new PhysicsImpostor(
-      arrow,
-      PhysicsImpostor.CylinderImpostor,
-      { mass: 1 }
-    );
-
-    // You can add movement logic here for the projectile
-    this.moveProjectile(arrow, new Vector3(0, 0, 1)); // Example direction
-    console.log("Arrow projectile spawned at: ", position);
-  }
-
-  private moveProjectile(projectile: Mesh, direction: Vector3) {
-    // Set the projectile's velocity
-    projectile.physicsImpostor.setLinearVelocity(direction.scale(10)); // Speed can be adjusted
+    // Optional: You can add logic for animating the projectile's flight
+    console.log("Sphere spawned from", startPosition, "to", targetPosition);
   }
 }

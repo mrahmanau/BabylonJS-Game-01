@@ -1,7 +1,6 @@
 import {
   Vector3,
   Scene,
-  Mesh,
   Sprite,
   SpriteManager,
   MeshBuilder,
@@ -17,7 +16,7 @@ export class Archer extends Character {
     this.createMesh(position, scene);
 
     // Create sprite for the archer
-    this.sprite = this.createSprite("assets/sprites/coin.png", 3, 32, scene);
+    this.sprite = this.createSprite("assets/sprites/knight.png", 3, 32, scene);
     this.sprite.playAnimation(
       this.animationCells[team === 0 ? 1 : 0],
       this.animationCells[team === 0 ? 1 : 0] + 7,
@@ -45,7 +44,7 @@ export class Archer extends Character {
 
     setInterval(() => {
       this.attack();
-      this.enemyInRange = this.updateEnemyInRange();
+      this.detectEnemies(global.arrUnits[this.team === 0 ? 1 : 0]);
       this.destination = this.updateDestination();
     }, this.attackSpeed);
   }
@@ -63,7 +62,7 @@ export class Archer extends Character {
     mesh.ellipsoid = new Vector3(0.1, 0.1, 0.1);
 
     // Store the mesh in the Archer instance for reference
-    (this as any).mesh = mesh;
+    this.mesh = mesh;
   }
 
   createSprite(
@@ -83,15 +82,16 @@ export class Archer extends Character {
   }
 
   attack() {
-    let curEnemy: Mesh = null;
-    for (const enemyMesh of this.enemyInRange) {
-      const distance = Vector3.Distance(this.position, enemyMesh.position);
+    let curEnemy: Character | null = null;
+    for (const enemy of this.enemyInRange) {
+      const distance = Vector3.Distance(this.position, enemy.position);
       if (distance < this.attackRange) {
-        enemyMesh.visibility += 0.1;
-        curEnemy = enemyMesh;
+        enemy.takeDamage(10); // Deal damage to the enemy
+        curEnemy = enemy;
       }
     }
 
+    // Update weapon animation based on whether an enemy is in range
     if (curEnemy === null) {
       this.weaponSprite.playAnimation(0, 0, true, 200);
     } else {
@@ -100,33 +100,22 @@ export class Archer extends Character {
   }
 
   takeDamage() {
-    const mesh = this as any as Mesh;
-    if (mesh.visibility > 0.5) {
-      const damage = Math.ceil((mesh.visibility - 0.5) * 100);
+    if (this.mesh.visibility > 0.5) {
+      const damage = Math.ceil((this.mesh.visibility - 0.5) * 100);
       this.health = Math.max(0, this.health - damage);
-      mesh.visibility = 0.5;
+      this.mesh.visibility = 0.5;
+      this.updateHealthBar();
     }
   }
 
   die() {
-    const index = global.arrUnits[this.team].indexOf(this as any);
+    const index = global.arrUnits[this.team].indexOf(this);
     if (index !== -1) {
       global.arrUnits[this.team].splice(index, 1);
     }
-    (this as any as Mesh).dispose();
+    this.mesh.dispose();
     this.sprite.dispose();
     this.weaponSprite.dispose();
-  }
-
-  updateEnemyInRange(): Mesh[] {
-    const enemyInRange: Mesh[] = [];
-    for (const enemyMesh of global.arrUnits[this.team === 0 ? 1 : 0]) {
-      const distance = Vector3.Distance(this.position, enemyMesh.position);
-      if (distance < this.seeEnemyRange) {
-        enemyInRange.push(enemyMesh);
-      }
-    }
-    return enemyInRange;
   }
 
   updateDestination(): Vector3 {

@@ -11,7 +11,6 @@ import {
 import { Castle } from "./castle";
 import { GoldMine } from "./gold-mine";
 import { UIManager } from "./UI/ui-manager";
-import { Knight } from "./knight";
 import { Archer } from "./archer";
 
 let canvas: HTMLCanvasElement;
@@ -61,10 +60,10 @@ class App {
     // const knightTeam1Position = new Vector3(12, 0, -12);
     // new Knight(1, knightTeam1Position, scene);
 
-    const archerTeam0Position = new Vector3(-12, 0, 12);
-    new Archer(0, archerTeam0Position, scene);
+    // const archerTeam0Position = new Vector3(-14, 0, 14);
+    // new Archer(0, archerTeam0Position, scene);
 
-    const archerTeam1Position = new Vector3(12, 0, -12);
+    const archerTeam1Position = new Vector3(14, 0, -14);
     new Archer(1, archerTeam1Position, scene);
 
     // Run the render loop to continuously render the scene

@@ -21,12 +21,12 @@ export class Character {
   healthBar: Mesh;
   sprite: Sprite;
   weaponSprite: Sprite;
-  enemyInRange: Mesh[] = [];
+  enemyInRange: Character[] = []; // Changed from Mesh[] to Character[]
   animationCells = [16, 24];
   attackSpeed = 500; // 0.5 sec
   attackRange = 1.5;
   seeEnemyRange = 7;
-  mesh: Mesh; // Add a mesh property
+  mesh: Mesh;
 
   constructor(team: number, position: Vector3, scene: Scene) {
     this.team = team;
@@ -64,41 +64,69 @@ export class Character {
     healthBarContainer.material = grayMat;
     healthBarContainer.position = new Vector3(0, 1, 0); // Adjust height relative to character
 
-    // Parent the health bar to the container
     healthBar.parent = healthBarContainer;
-    // Parent the health bar container to the character mesh
     healthBarContainer.parent = this.mesh;
-    this.healthBar = healthBarContainer; // Keep reference to the health bar container for updates
-    return healthBarContainer; // Return the container
+    this.healthBar = healthBarContainer;
+    return healthBarContainer;
   }
 
-  // Shared method to move character
+  // Move character toward a destination
   move(destination: Vector3) {
     const direction = destination
       .subtract(this.position)
       .normalize()
       .scale(moveSpeed);
-    this.position.addInPlace(direction); // Update character position
-    this.mesh.position.copyFrom(this.position); // Move the character mesh
+    this.position.addInPlace(direction);
+    this.mesh.position.copyFrom(this.position);
 
-    // Update health bar position relative to character
     if (this.healthBar) {
-      this.healthBar.position.x = this.position.x; // Match x position
-      this.healthBar.position.z = this.position.z; // Match z position
-      this.healthBar.position.y = 0.5; // Keep height at 1 relative to the character
+      this.healthBar.position.x = this.position.x;
+      this.healthBar.position.z = this.position.z;
+      this.healthBar.position.y = 0.5;
     }
     return direction;
   }
 
-  // Shared method to update health bar
+  // Update health bar scaling based on health
   updateHealthBar() {
     const percentage = this.health / maxHealth;
-    this.healthBar.scaling.x = percentage; // Scale health bar based on health
-    //this.healthBar.position.x = (1 - percentage) * 0.25; // Adjust position based on health
+    this.healthBar.scaling.x = percentage;
   }
 
-  // Abstract methods for specific actions (can be overridden)
-  attack() {}
-  die() {}
-  takeDamage() {}
+  // Take damage and check if character should die
+  takeDamage(damage: number) {
+    this.health -= damage;
+    if (this.health <= 0) {
+      this.die();
+    } else {
+      this.updateHealthBar();
+    }
+  }
+
+  // Attack logic - checks if enemies are in range and deals damage
+  attack() {
+    if (this.enemyInRange.length > 0) {
+      this.enemyInRange.forEach((enemy) => {
+        enemy.takeDamage(10); // Deals 10 damage to each enemy in range
+      });
+    }
+  }
+
+  // Detects enemies within `seeEnemyRange`
+  detectEnemies(enemies: Character[]) {
+    this.enemyInRange = enemies.filter((enemy) => {
+      const distance = Vector3.Distance(this.position, enemy.position);
+      return distance <= this.seeEnemyRange;
+    });
+  }
+
+  // Handle character death
+  die() {
+    const index = global.arrUnits[this.team].indexOf(this);
+    if (index > -1) {
+      global.arrUnits[this.team].splice(index, 1);
+    }
+    this.mesh.dispose();
+    console.log("Character has died.");
+  }
 }

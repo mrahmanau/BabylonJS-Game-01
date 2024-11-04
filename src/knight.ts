@@ -16,7 +16,7 @@ export class Knight extends Character {
     // Create Mesh shape
     this.createMesh(position, scene);
 
-    // Create sprite
+    // Create sprite for the knight
     this.sprite = this.createSprite("assets/sprites/knight.png", 3, 32, scene);
     this.sprite.playAnimation(
       this.animationCells[team === 0 ? 1 : 0],
@@ -26,7 +26,7 @@ export class Knight extends Character {
     );
 
     this.weaponSprite = this.createSprite(
-      "assets/images/weapon_sprite.png",
+      "assets/images/weapon_sprite.png", // Assuming knight's weapon
       5,
       100,
       scene
@@ -39,13 +39,13 @@ export class Knight extends Character {
       } else {
         const direction = this.move(this.destination);
         this.updateSpritePosition(direction);
-        this.updateHealthBar(); // Update health bar according to current health
+        this.updateHealthBar();
       }
     });
 
     setInterval(() => {
       this.attack();
-      this.enemyInRange = this.updateEnemyInRange();
+      this.detectEnemies(global.arrUnits[this.team === 0 ? 1 : 0]);
       this.destination = this.updateDestination();
     }, this.attackSpeed);
   }
@@ -54,7 +54,7 @@ export class Knight extends Character {
 
   createMesh(position: Vector3, scene: Scene) {
     // Create a new mesh for the Knight
-    const mesh = MeshBuilder.CreateBox("knightMesh", { size: 0.5 }, scene); // Create a basic mesh; adjust shape as needed
+    const mesh = MeshBuilder.CreateBox("knightMesh", { size: 0.5 }, scene);
 
     // Set mesh properties
     mesh.position = position;
@@ -63,7 +63,7 @@ export class Knight extends Character {
     mesh.ellipsoid = new Vector3(0.1, 0.1, 0.1);
 
     // Store the mesh in the Knight instance for reference
-    (this as any).mesh = mesh;
+    this.mesh = mesh;
   }
 
   createSprite(
@@ -73,47 +73,47 @@ export class Knight extends Character {
     scene: Scene
   ): Sprite {
     const spriteManagerPlayer = new SpriteManager(
-      "playerManager",
+      "knightManager",
       spriteUrl,
       capacity,
       cellSize,
       scene
     );
-    return new Sprite("player0", spriteManagerPlayer);
+    return new Sprite("knightSprite", spriteManagerPlayer);
   }
 
   attack() {
-    let curEnemy: Mesh = null;
-    for (const enemyMesh of this.enemyInRange) {
-      const distance = Vector3.Distance(this.position, enemyMesh.position);
+    let curEnemy: Character | null = null;
+    for (const enemy of this.enemyInRange) {
+      const distance = Vector3.Distance(this.position, enemy.position);
       if (distance < this.attackRange) {
-        enemyMesh.visibility += 0.1;
-        curEnemy = enemyMesh;
+        enemy.takeDamage(10); // Simulate damage to the enemy
+        curEnemy = enemy;
       }
     }
 
+    // Play attack animation based on whether an enemy is in range
     if (curEnemy === null) {
-      this.weaponSprite.playAnimation(0, 0, true, 200);
+      this.weaponSprite.playAnimation(0, 0, true, 200); // Idle animation
     } else {
-      this.weaponSprite.playAnimation(3, 5, true, 200);
+      this.weaponSprite.playAnimation(3, 5, true, 200); // Attack animation
     }
   }
 
   takeDamage() {
-    const mesh = this as any as Mesh;
-    if (mesh.visibility > 0.5) {
-      const damage = Math.ceil((mesh.visibility - 0.5) * 100);
+    if (this.mesh.visibility > 0.5) {
+      const damage = Math.ceil((this.mesh.visibility - 0.5) * 100);
       this.health = Math.max(0, this.health - damage);
-      mesh.visibility = 0.5;
+      this.mesh.visibility = 0.5;
     }
   }
 
   die() {
-    const index = global.arrUnits[this.team].indexOf(this as any);
+    const index = global.arrUnits[this.team].indexOf(this);
     if (index !== -1) {
       global.arrUnits[this.team].splice(index, 1);
     }
-    (this as any as Mesh).dispose();
+    this.mesh.dispose();
     this.sprite.dispose();
     this.weaponSprite.dispose();
   }
