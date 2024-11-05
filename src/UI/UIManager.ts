@@ -1,36 +1,40 @@
 import * as GUI from "@babylonjs/gui";
 import { HUD } from "./hud";
 import { ButtonsManager } from "./ButtonsManager";
+import { StartMenu } from "./StartMenu";
 import { PauseMenu } from "./PauseMenu";
 
+/**
+ * Manages the UI components of the game.
+ */
 export class UIManager {
   static advancedTexture: GUI.AdvancedDynamicTexture;
 
   constructor() {
-    // Initialize the advanced texture for the UI
+    // Initialize the advanced texture for UI
     UIManager.advancedTexture = GUI.AdvancedDynamicTexture.CreateFullscreenUI(
       "UI",
       true
     );
 
-    // Create the HUD and ButtonsManager, both using the shared advancedTexture
-    new HUD();
-    new ButtonsManager();
-    //new StartMenu();
-    new PauseMenu();
+    // Instantiate various UI components
+    new HUD(); // Initialize HUD
+    new ButtonsManager(); // Initialize buttons manager
+    new StartMenu(); // Uncomment to initialize StartMenu
+    //new PauseMenu(); // Initialize pause menu
   }
 }
 
 /**
- * Sets common properties for UI elements, such as width, height, and positioning.
- * @param control - The UI control to apply properties to.
- * @param width - Width of the control.
- * @param height - Height of the control.
- * @param left - Left offset of the control.
- * @param top - Top offset of the control.
- * @param bottom - Bottom offset of the control.
- * @param verticalAlignment - Optional vertical alignment.
- * @param horizontalAlignment - Optional horizontal alignment.
+ * Sets the position and size properties of a UI control.
+ * @param control - The GUI control to set values on.
+ * @param width - The width of the control.
+ * @param height - The height of the control.
+ * @param left - The left margin of the control.
+ * @param top - The top margin of the control.
+ * @param bottom - The bottom padding of the control.
+ * @param verticalAlignment - Vertical alignment of the control.
+ * @param horizontalAlignment - Horizontal alignment of the control.
  */
 export function setValues(
   control: GUI.Control,
@@ -52,68 +56,72 @@ export function setValues(
 }
 
 /**
-
- * Sets the properties of a GUI TextBlock element.
-
- * 
-
- * @param {GUI.TextBlock} title - The TextBlock element to be styled.
-
- * @param {string} text - The text content to be set for the TextBlock.
-
+ * Sets the title properties for a text block.
+ * @param title - The text block to set titles on.
+ * @param text - The title text.
  */
-
 export function setTitles(title: GUI.TextBlock, text: string) {
   title.text = text;
-
-  title.color = "#94577f";
-
-  title.fontSize = 56;
-
-  title.fontWeight = "700";
-
-  title.height = "100px";
-
-  title.paddingTop = "16px";
-
-  title.paddingBottom = "16px";
-
-  title.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP;
+  title.color = "#94577f"; // Title color
+  title.fontSize = 56; // Font size
+  title.fontWeight = "700"; // Font weight
+  title.height = "100px"; // Height of the title
+  title.paddingTop = "16px"; // Top padding
+  title.paddingBottom = "16px"; // Bottom padding
+  title.verticalAlignment = GUI.Control.VERTICAL_ALIGNMENT_TOP; // Vertical alignment
 }
 
 /**
-
- * Sets up a button with common properties and event handlers.
-
+ * Sets up a button with common properties and events.
  * @param button - The button to set up.
-
- * @param name - The name of the button.
-
+ * @param onClick - The click event handler for the button.
+ * @param width - Width of the button.
+ * @param height - Height of the button.
+ * @param background - Background color of the button.
+ * @param textColor - Text color of the button.
+ * @param cornerRadius - Corner radius for the button.
+ * @param paddingBottom - Bottom padding for the button.
  */
-
-export function setupButton(button: GUI.Button) {
+export function setupButton(
+  button: GUI.Button,
+  onClick: () => void,
+  width: string = "200px",
+  height: string = "50px",
+  background: string = "#292723",
+  textColor: string = "white",
+  cornerRadius: number = 0,
+  paddingBottom: string = "4px"
+) {
+  // Set button dimensions and alignment
   setValues(
     button,
-    "200px",
-    "50px",
-    "0px",
-    "0px",
-    "0px",
+    width,
+    height,
+    "0px", // Margin left
+    "0px", // Margin top
+    "0px", // Margin right
     GUI.Control.HORIZONTAL_ALIGNMENT_CENTER,
     GUI.Control.VERTICAL_ALIGNMENT_CENTER
   );
 
-  button.color = "white";
+  button.color = textColor; // Set text color
+  button.background = background; // Set background color
+  button.paddingBottom = paddingBottom; // Set bottom padding
 
-  button.background = "#292723";
+  // Set corner radius if specified
+  if (cornerRadius > 0) {
+    button.cornerRadius = cornerRadius;
+  }
 
-  button.paddingBottom = "4px";
-
+  // Pointer animations for hover effects
   button.pointerEnterAnimation = function () {
-    button.background = "#7c746a";
+    button.background = "#7c746a"; // Hover color
   };
 
   button.pointerOutAnimation = function () {
-    button.background = "#292723";
+    button.background = background; // Reset to default color
   };
+
+  // Attach the click event to the button
+  button.onPointerClickObservable.add(onClick);
 }

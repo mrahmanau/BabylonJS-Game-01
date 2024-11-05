@@ -1,85 +1,68 @@
-import * as GUI from "@babylonjs/gui";
 import { setTitles, setupButton, setValues, UIManager } from "./UIManager";
+import * as GUI from "@babylonjs/gui";
 
 /**
-
- * Manages the pause menu
-
+ * Manages the pause menu.
  */
-
 export class PauseMenu {
   constructor() {
-    // Use the shared advancedTexture from UIManager
-
     const advancedTexture = UIManager.advancedTexture;
-
-    createPauseMenu(advancedTexture);
+    this.createMenu(advancedTexture, "Game Paused", [
+      { name: "Resume", onClick: handleResumeClick },
+      { name: "Exit", onClick: handleExitClick },
+    ]);
   }
-}
 
-function createPauseMenu(advancedTexture: GUI.AdvancedDynamicTexture) {
-  const pauseMenu = new GUI.StackPanel();
+  /**
+   * Creates the pause menu UI.
+   * @param advancedTexture - The advanced texture to add the pause menu to.
+   * @param titleText - The title text for the menu.
+   * @param buttons - The array of buttons to create.
+   */
+  createMenu(
+    advancedTexture: GUI.AdvancedDynamicTexture,
+    titleText: string,
+    buttons: { name: string; onClick: () => void }[]
+  ) {
+    const panel = new GUI.StackPanel();
+    panel.background = "#454747";
+    setValues(
+      panel,
+      "500px",
+      "300px",
+      "0px",
+      "0px",
+      "0px",
+      GUI.Control.HORIZONTAL_ALIGNMENT_CENTER,
+      GUI.Control.VERTICAL_ALIGNMENT_CENTER
+    );
 
-  pauseMenu.background = "#454747";
+    const title = new GUI.TextBlock();
+    setTitles(title, titleText);
+    panel.addControl(title);
 
-  setValues(
-    pauseMenu,
-    "500px",
-    "300px",
-    "0px",
-    "0px",
-    "0px",
-    GUI.Control.HORIZONTAL_ALIGNMENT_CENTER,
-    GUI.Control.VERTICAL_ALIGNMENT_CENTER
-  );
+    buttons.forEach(({ name, onClick }) => {
+      const button = GUI.Button.CreateSimpleButton(name, name);
+      setupButton(button, onClick); // Use the shared setupButton function
+      panel.addControl(button);
+    });
 
-  // Create and add the title
-
-  const title = new GUI.TextBlock();
-
-  setTitles(title, "Game Paused");
-
-  pauseMenu.addControl(title);
-
-  // Create and add the resume button
-
-  const resumeButton = GUI.Button.CreateSimpleButton("resumeButton", "Resume");
-
-  setupButton(resumeButton);
-
-  pauseMenu.addControl(resumeButton);
-
-  resumeButton.onPointerClickObservable.add(() => {
-    onButtonClick("resumeButton");
-  });
-
-  // Create and add the exit button
-
-  const exitButton = GUI.Button.CreateSimpleButton("exitButton", "Exit");
-
-  setupButton(exitButton);
-
-  pauseMenu.addControl(exitButton);
-
-  exitButton.onPointerClickObservable.add(() => {
-    onButtonClick("exitButton");
-  });
-
-  advancedTexture.addControl(pauseMenu);
+    advancedTexture.addControl(panel);
+  }
 }
 
 /**
-
- * Handles button click events
-
- * @param buttonName - The name of the button that was clicked
-
+ * Handles the Resume button click event.
  */
+function handleResumeClick() {
+  console.log("Resume clicked");
+  // Logic to resume the game goes here
+}
 
-function onButtonClick(buttonName: string) {
-  if (buttonName === "resumeButton") {
-    console.log(`${buttonName} has been clicked`);
-  } else if (buttonName === "exitButton") {
-    console.log(`${buttonName} has been clicked`);
-  }
+/**
+ * Handles the Exit button click event.
+ */
+function handleExitClick() {
+  console.log("Exit clicked");
+  // Logic to exit the game goes here
 }

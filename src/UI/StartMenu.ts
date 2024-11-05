@@ -1,15 +1,12 @@
 import * as GUI from "@babylonjs/gui";
+import { setTitles, setupButton, setValues, UIManager } from "./UIManager";
 
 /**
  * Manages the start menu
  */
-
-import { setTitles, setupButton, setValues, UIManager } from "./UIManager";
-
 export class StartMenu {
   constructor() {
     // Use the shared advancedTexture from UIManager
-
     const advancedTexture = UIManager.advancedTexture;
 
     createStartMenu(advancedTexture);
@@ -17,20 +14,14 @@ export class StartMenu {
 }
 
 /**
-
  * Creates the start menu UI
-
  * @param advancedTexture - The advanced texture to add the start menu to
-
  */
-
 function createStartMenu(advancedTexture: GUI.AdvancedDynamicTexture) {
   const startMenu = new GUI.StackPanel();
 
   // Specific styling for startMenu
-
   startMenu.background = "#454747";
-
   setValues(
     startMenu,
     "500px",
@@ -43,57 +34,38 @@ function createStartMenu(advancedTexture: GUI.AdvancedDynamicTexture) {
   );
 
   // Create and add the title
-
   const title = new GUI.TextBlock();
-
-  setTitles(title, "Babylon Game");
-
+  setTitles(title, "Babylon Game"); // Assuming you have a setTitles function defined elsewhere
   startMenu.addControl(title);
 
   // Create and add the start button
-
   const startButton = GUI.Button.CreateSimpleButton(
     "startButton",
     "Start Game"
   );
-
-  setupButton(startButton);
-
+  setupButton(startButton, handleStartButtonClick); // Use the setupButton function
   startMenu.addControl(startButton);
 
-  startButton.onPointerClickObservable.add(() => {
-    onButtonClick("startButton");
-  });
-
-  // Create and add the exit button
-
+  // Create and add the exit button using ButtonsManager
   const exitButton = GUI.Button.CreateSimpleButton("exitButton", "Exit");
-
-  setupButton(exitButton);
-
+  setupButton(exitButton, handleExitButtonClick); // Use the setupButton function
   startMenu.addControl(exitButton);
 
-  exitButton.onPointerClickObservable.add(() => {
-    onButtonClick("exitButton");
-  });
-
+  // Add the start menu to the advanced texture
   advancedTexture.addControl(startMenu);
 }
 
 /**
-
- * Handles button click events
-
- * @param buttonName - The name of the button that was clicked
-
+ * Handles the start button click event
  */
+function handleStartButtonClick() {
+  console.log("startButton has been clicked");
+}
 
-function onButtonClick(buttonName: string) {
-  if (buttonName === "startButton") {
-    console.log(`${buttonName} has been clicked`);
-  } else if (buttonName === "exitButton") {
-    console.log(`${buttonName} has been clicked`);
-
-    window.close();
-  }
+/**
+ * Handles the exit button click event
+ */
+function handleExitButtonClick() {
+  console.log("exitButton has been clicked");
+  window.close(); // This will attempt to close the window, which may not work in all browsers
 }

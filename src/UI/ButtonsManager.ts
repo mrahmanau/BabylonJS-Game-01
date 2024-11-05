@@ -1,82 +1,97 @@
 import { StackPanel, Button } from "@babylonjs/gui";
-import { setValues, UIManager } from "./UIManager";
-
-//const buttonPanel = new StackPanel();
+import { setupButton, setValues, UIManager } from "./UIManager";
 
 /**
- * Initializes the ButtonsManager with a given scene.
+ * Manages the creation and handling of buttons in the UI.
  */
 export class ButtonsManager {
   private buttonPanel: StackPanel;
 
   constructor() {
-    // Access the shared advancedTexture from UIManager
+    // Access the shared advanced texture from UIManager
     const advancedTexture = UIManager.advancedTexture;
 
-    // Initialize a stack panel to hold buttons
+    // Create and set up the button panel
     this.buttonPanel = new StackPanel();
     setValues(this.buttonPanel, "500px", "70px", "10px", "0px", "10px");
-    this.buttonPanel.isVertical = false;
-    advancedTexture.addControl(this.buttonPanel);
+    this.buttonPanel.isVertical = false; // Arrange buttons horizontally
+    advancedTexture.addControl(this.buttonPanel); // Add button panel to advanced texture
 
-    // Create buttons
-    this.createImageButton("Slime", "assets/images/slime.png");
-    this.createImageButton("Knight", "assets/images/knight.png");
-    this.createImageButton("Archer", "assets/images/archer.png");
-    this.createTextButton("Accelerator", "X1");
+    this.createCharacterSelectionButtons(); // Create character selection buttons
   }
 
   /**
-   * Creates an image button and adds it to the button panel.
-   * @param name - The name of the button.
-   * @param imageUrl - The URL of the image to be used for the button.
+   * Creates an exit button and adds it to the button panel.
+   * @param onClick - The event handler for the button click.
    */
-  private createImageButton(name: string, imageUrl: string) {
-    const button = Button.CreateImageOnlyButton(name, imageUrl);
-    this.setupButton(button, name);
-    this.buttonPanel.addControl(button);
+  public createExitButton(onClick: () => void) {
+    const exitButton = Button.CreateSimpleButton("exitButton", "Exit");
+    setupButton(exitButton, onClick); // Use default values for exit button
+    this.buttonPanel.addControl(exitButton); // Add exit button to the panel
   }
 
   /**
-   * Creates a text button and adds it to the button panel.
-   * @param name - The name of the button.
-   * @param buttonText - The text to be displayed on the button.
+   * Creates buttons for character selection and adds them to the UI.
    */
-  private createTextButton(name: string, buttonText: string) {
-    const button = Button.CreateSimpleButton(name, buttonText);
-    button.color = "white";
-    button.fontSize = 24;
-    button.fontWeight = "700";
-    button.paddingLeft = "5px";
-    this.setupButton(button, name);
-    this.buttonPanel.addControl(button);
+  public createCharacterSelectionButtons() {
+    const advancedTexture = UIManager.advancedTexture;
+
+    // Define characters with their images and click handlers
+    const characters = [
+      {
+        name: "Slime",
+        imageUrl: "assets/images/slime.png",
+        onClick: () => this.onCharacterSelect("Slime"),
+      },
+      {
+        name: "Knight",
+        imageUrl: "assets/images/knight.png",
+        onClick: () => this.onCharacterSelect("Knight"),
+      },
+      {
+        name: "Archer",
+        imageUrl: "assets/images/archer.png",
+        onClick: () => this.onCharacterSelect("Archer"),
+      },
+      {
+        name: "X1",
+        buttonText: "X1",
+        onClick: () => this.onCharacterSelect("Accelerator"),
+      },
+    ];
+
+    // Create a panel for character buttons
+    const characterPanel = new StackPanel();
+    setValues(characterPanel, "500px", "70px", "10px", "0px", "10px");
+    characterPanel.isVertical = false; // Arrange character buttons horizontally
+    advancedTexture.addControl(characterPanel); // Add character panel to advanced texture
+
+    // Iterate through characters and create buttons
+    characters.forEach(({ name, imageUrl, onClick }) => {
+      let button;
+      if (imageUrl) {
+        // Create image button if an image URL is provided
+        button = Button.CreateImageOnlyButton(name, imageUrl);
+      } else {
+        // Create simple button if no image URL is provided
+        button = Button.CreateSimpleButton(name, name);
+        button.color = "white"; // Set button text color
+        button.fontSize = "24px"; // Set font size
+        button.fontWeight = "700"; // Set font weight
+        button.paddingLeft = "5px"; // Set left padding
+      }
+
+      // Setup character buttons with specific dimensions
+      setupButton(button, onClick, "80px", "60px", "#7c746a", "white", 16); // Specific for character buttons
+      characterPanel.addControl(button); // Add button to character panel
+    });
   }
 
   /**
-   * Sets up common properties and animations for buttons.
-   * @param button - The button to set up.
-   * @param name - The name of the button.
+   * Handles character selection.
+   * @param characterName - The name of the selected character.
    */
-  private setupButton(button: Button, name: string) {
-    setValues(button, "80px", "60px", "10px", "0px", "0px");
-    button.background = "#7c746a";
-    button.cornerRadius = 16;
-    button.onPointerClickObservable.add(() => this.onButtonClick(name));
-
-    // Define hover animations
-    button.pointerEnterAnimation = () => {
-      button.background = "#292723";
-    };
-    button.pointerOutAnimation = () => {
-      button.background = "#7c746a";
-    };
-  }
-
-  /**
-   * Handles button click events.
-   * @param buttonName - The name of the button that was clicked.
-   */
-  private onButtonClick(buttonName: string) {
-    console.log(`${buttonName} has been clicked`);
+  private onCharacterSelect(characterName: string) {
+    console.log(`${characterName} has been selected`); // Log the character selection
   }
 }
